@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dardcor Color Grading Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .filter-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: #4B5563;
+            outline: none;
+            transition: background 0.3s;
+        }
+        
+        .filter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+        }
+        
+        .filter-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+        }
+        
+        .preset-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .preset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .level-indicator {
+            height: 4px;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .processing {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-palette text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold">Dardcor Color Grading Studio</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-400">Pro: <span class="text-green-400">Active</span></span>
+                <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-save mr-2"></i>Save Project
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Video Player Section -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Upload Area -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Upload Video</h2>
+                    <div class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 transition cursor-pointer">
+                        <input type="file" id="videoUpload" class="hidden" accept="video/*">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-3"></i>
+                        <p class="text-gray-400 mb-2">Drag & drop your video here or</p>
+                        <button class="text-blue-500 hover:text-blue-400" onclick="document.getElementById('videoUpload').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Preview -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Preview</h2>
+                        <div class="flex space-x-2">
+                            <button class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg text-sm transition">
+                                <i class="fas fa-play mr-1"></i>Play
+                            </button>
+                            <button class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg text-sm transition">
+                                <i class="fas fa-pause mr-1"></i>Pause
+                            </button>
+                            <button class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg text-sm transition">
+                                <i class="fas fa-redo mr-1"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="video-container aspect-video flex items-center justify-center">
+                        <video id="videoPlayer" class="w-full h-full" controls>
+                            <source src="" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="noVideoMessage" class="text-center text-gray-500">
+                            <i class="fas fa-film text-6xl mb-3"></i>
+                            <p>Upload a video to begin grading</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Timeline</h2>
+                    <div class="bg-gray-700 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-600 h-full w-0 transition-all duration-300" id="progressBar"></div>
+                    </div>
+                    <div class="flex justify-between mt-2 text-sm text-gray-400">
+                        <span id="currentTime">00:00</span>
+                        <span id="duration">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="space-y-6">
+                <!-- Grading Levels -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Grading Levels</h2>
+                    <div class="space-y-4">
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-medium text-sm">Technical Correction</span>
+                                <span class="text-xs text-gray-400">Basic</span>
+                            </div>
+                            <div class="bg-gray-700 h-2 rounded-full">
+                                <div class="level-indicator bg-green-500 w-3/4"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-medium text-sm">Primary Grading</span>
+                                <span class="text-xs text-gray-400">Global</span>
+                            </div>
+                            <div class="bg-gray-700 h-2 rounded-full">
+                                <div class="level-indicator bg-blue-500 w-full"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-medium text-sm">Secondary Grading</span>
+                                <span class="text-xs text-gray-400">Selective</span>
+                            </div>
+                            <div class="bg-gray-700 h-2 rounded-full">
+                                <div class="level-indicator bg-purple-500 w-1/2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-medium text-sm">Creative Look</span>
+                                <span class="text-xs text-gray-400">Artistic</span>
+                            </div>
+                            <div class="bg-gray-700 h-2 rounded-full">
+                                <div class="level-indicator bg-yellow-500 w-1/4"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Filter Controls</h2>
+                    <div class="space-y-5">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-medium">Exposure</label>
+                                <span class="text-sm text-gray-400">0</span>
+                            </div>
+                            <input type="range" min="-2" max="2" value="0" step="0.1" class="filter-slider w-full">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-medium">Contrast</label>
+                                <span class="text-sm text-gray-400">0</span>
+                            </div>
+                            <input type="range" min="-2" max="2" value="0" step="0.1" class="filter-slider w-full">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-medium">Saturation</label>
+                                <span class="text-sm text-gray-400">0%</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="0" step="1" class="filter-slider w-full">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-medium">Temperature</label>
+                                <span class="text-sm text-gray-400">0</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="0" step="1" class="filter-slider w-full">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <label class="text-sm font-medium">Highlights</label>
+                                <span class="text-sm text-gray-400">0%</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="0" step="1" class="filter-slider w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Style Presets -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Style Presets</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="preset-card bg-gray-700 rounded-lg p-3 border border-gray-600">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium">Teal & Orange</h3>
+                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">Blockbuster</span>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="w-full h-16 bg-gradient-to-r from-teal-700 to-orange-500 rounded"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="preset-card bg-gray-700 rounded-lg p-3 border border-gray-600">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium">Desaturated</h3>
+                                <span class="text-xs bg-gray-600 text-gray-300 px-2 py-1 rounded">Muted</span>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="w-full h-16 bg-gradient-to-r from-gray-600 to-gray-400 rounded"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="preset-card bg-gray-700 rounded-lg p-3 border border-gray-600">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium">Warm Cinematic</h3>
+                                <span class="text-xs bg-yellow-900 text-yellow-300 px-2 py-1 rounded">Nostalgic</span>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="w-full h-16 bg-gradient-to-r from-yellow-700 to-orange-600 rounded"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="preset-card bg-gray-700 rounded-lg p-3 border border-gray-600">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium">Cool Blue</h3>
+                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">Cold</span>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="w-full h-16 bg-gradient-to-r from-blue-700 to-sky-400 rounded"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="preset-card bg-gray-700 rounded-lg p-3 border border-gray-600">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium">High Contrast</h3>
+                                <span class="text-xs bg-purple-900 text-purple-300 px-2 py-1 rounded">Stylized</span>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="w-full h-16 bg-gradient-to-r from-black via-purple-700 to-white rounded"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="preset-card bg-gray-700 rounded-lg p-3 border border-gray-600">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium">Vintage</h3>
+                                <span class="text-xs bg-amber-900 text-amber-300 px-2 py-1 rounded">Film</span>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="w-full h-16 bg-gradient-to-r from-amber-800 via-yellow-600 to-amber-800 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Panel -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Export Settings</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Quality</label>
+                            <select class="w-full bg-gray-700 rounded-lg px-3 py-2 text-sm">
+                                <option>Full HD (1080p)</option>
+                                <option>4K Ultra HD</option>
+                                <option>HD (720p)</option>
+                                <option>SD (480p)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Format</label>
+                            <select class="w-full bg-gray-700 rounded-lg px-3 py-2 text-sm">
+                                <option>MP4 (H.264)</option>
+                                <option>MOV (Apple ProRes)</option>
+                                <option>WebM</option>
+                                <option>AVI</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Color Space</label>
+                            <select class="w-full bg-gray-700 rounded-lg px-3 py-2 text-sm">
+                                <option>Rec. 709</option>
+                                <option>DCI-P3</option>
+                                <option>BT.2020</option>
+                                <option>ACEScg</option>
+                            </select>
+                        </div>
+                        
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition flex items-center justify-center">
+                            <i class="fas fa-download mr-2"></i>
+                            <span id="exportText">Export Video</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info Panel -->
+        <div class="mt-6 bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <h2 class="text-xl font-bold mb-3">Color Grading Guide</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                    <h3 class="font-medium mb-2 text-blue-400">Tingkatan Grading</h3>
+                    <ul class="space-y-1 text-gray-300">
+                        <li>1. <span class="text-white">Technical Correction</span> - Koreksi dasar</li>
+                        <li>2. <span class="text-white">Primary Grading</span> - Pengaturan global</li>
+                        <li>3. <span class="text-white">Secondary Grading</span> - Manipulasi selektif</li>
+                        <li>4. <span class="text-white">Creative Look</span> - Konstruksi suasana</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2 text-purple-400">Gaya Visual</h3>
+                    <ul class="space-y-1 text-gray-300">
+                        <li>• Teal & Orange - Hollywood blockbuster</li>
+                        <li>• Desaturated - Realisistik & dokumenter</li>
+                        <li>• Warm Cinematic - Nostalgia & romantis</li>
+                        <li>• Cool Blue - Teknologis & tegang</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2 text-yellow-400">Tips Pro</h3>
+                    <ul class="space-y-1 text-gray-300">
+                        <li>• Koreksi teknis dulu sebelum grading artistik</li>
+                        <li>• Skin tone adalah priori
